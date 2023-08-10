@@ -1,12 +1,13 @@
 package com.boilerplate.apirequest.config;
 
 import lombok.Getter;
-import lombok.Value;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 @Component
 @Getter
-public class SlackBotConfig {
+public class SlackBotProperties {
+
 	@Value("${spring.slack.token.singing_secret}")
 	private String singingSecret;
 
@@ -15,6 +16,9 @@ public class SlackBotConfig {
 
 	@Value("${spring.slack.token.app_token}")
 	private String appToken;
+
+	@Value("${spring.slack.token.channel}")
+	private String channelId;
 
 
 }
