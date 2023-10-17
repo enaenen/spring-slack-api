@@ -35,12 +35,15 @@ public class SlackBotService {
 
 	private final String SLACK_ERROR_MESSAGE = "Slack API Response Error";
 	private final String ERROR_RESPONSE = "error";
-	private final String EMAIL_DOMAIN = "@student.42seoul.kr";
+	private final String INTRA42_EMAIL_DOMAIN = "@student.42seoul.kr";
 
 
-	public SlackUserInfo requestSlackUserInfoByEmail(String intraId) {
-		String url = "https://slack.com/api/users.lookupByEmail?email=" + intraId + EMAIL_DOMAIN;
+	public SlackUserInfo requestSlackUserInfoByIntraNickname(String intraId) {
+		return requestSlackUserInfo(intraId + INTRA42_EMAIL_DOMAIN);
+	}
 
+	private SlackUserInfo requestSlackUserInfo(String emailAddress) {
+		String url = "https://slack.com/api/users.lookupByEmail?email=" + emailAddress;
 		HttpHeaders headers = new HttpHeaders();
 		String slackToken = BEARER + slackBotConfig.getAppToken();
 		headers.add(AUTHORIZATION, slackToken);
@@ -59,30 +62,42 @@ public class SlackBotService {
 			SlackResponse slackResponse = objectMapper.readValue(response.getBody(),
 					SlackResponse.class);
 			if (slackResponse.getOk().equals(ERROR_RESPONSE)) {
+				log.error("Error occurred {}", slackResponse);
 				throw new IllegalArgumentException(SLACK_ERROR_MESSAGE);
 			}
 			return slackResponse.getSlackUserInfo();
 		} catch (IOException e) {
+			log.error("Error occurred {}", e.getMessage());
 			throw new ClassFormatException(SLACK_ERROR_MESSAGE);
 		}
 	}
 
 	public void sendSlackMessage(String intraId, String message) {
-		SlackUserInfo slackUserInfo = requestSlackUserInfoByEmail(intraId);
+		SlackUserInfo slackUserInfo;
+		if (intraId.contains("@"))
+			slackUserInfo = requestSlackUserInfo(intraId);
+		else
+			slackUserInfo = requestSlackUserInfoByIntraNickname(intraId);
 		String slackUserIdentifyId = slackUserInfo.getId();
+		sendMessageToSlack(message, slackUserIdentifyId);
+	}
 
+	private void sendMessageToSlack(String message, String channelId) {
+		log.info("sendMessageToSlack: message = {} channelID = {}", message, channelId);
 		try {
 			MethodsClient methods = Slack.getInstance().methods(slackBotConfig.getAppToken());
 
 			ChatPostMessageRequest request = ChatPostMessageRequest.builder()
-					.channel(slackUserIdentifyId) // DM & channel
+					.channel(channelId) // DM & channel
 					.text(message)
 					.build();
 			methods.chatPostMessage(request);
-
-			log.info("[Slack DM] {} 에 메시지 보냄", slackUserInfo.getName());
 		} catch (SlackApiException | IOException e) {
 			log.error("[Slack error] {} ", e.getMessage());
 		}
+	}
+
+	public void sendSlackChannel(String channel, String message) {
+		sendMessageToSlack(message, channel);
 	}
 }
