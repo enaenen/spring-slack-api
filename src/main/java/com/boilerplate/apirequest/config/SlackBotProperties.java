@@ -8,17 +8,20 @@ import org.springframework.stereotype.Component;
 @Getter
 public class SlackBotProperties {
 
-	@Value("${spring.slack.token.singing_secret}")
+	@Value("${slack.token.singing-secret}")
 	private String singingSecret;
 
-	@Value("${spring.slack.token.bot_token}")
+	@Value("${slack.token.bot-token}")
 	private String botToken;
 
-	@Value("${spring.slack.token.app_token}")
+	@Value("${slack.token.app_token}")
 	private String appToken;
 
-	@Value("${spring.slack.token.channel}")
-	private String channelId;
+	@Value("${slack.channel.random}")
+	private String randomChannelId;
+
+	@Value("${slack.channel.cabi}")
+	private String cabiChannelId;
 
 
 }
