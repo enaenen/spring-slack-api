@@ -1,4 +1,4 @@
-package com.boilerplate.apirequest.slack.controller;
+package com.boilerplate.apirequest.slack.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
