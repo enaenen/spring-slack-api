@@ -35,14 +35,17 @@ public class SlackBotService {
 
 	private final String SLACK_ERROR_MESSAGE = "Slack API Response Error";
 	private final String ERROR_RESPONSE = "error";
+	private final String AUTH_ERROR_RESPONSE = "false";
 	private final String INTRA42_EMAIL_DOMAIN = "@student.42seoul.kr";
 
 
 	public SlackUserInfo requestSlackUserInfoByIntraNickname(String intraId) {
+		System.out.println(intraId);
 		return requestSlackUserInfo(intraId + INTRA42_EMAIL_DOMAIN);
 	}
 
 	private SlackUserInfo requestSlackUserInfo(String emailAddress) {
+		System.out.println(emailAddress);
 		String url = "https://slack.com/api/users.lookupByEmail?email=" + emailAddress;
 		HttpHeaders headers = new HttpHeaders();
 		String slackToken = BEARER + slackBotConfig.getAppToken();
@@ -61,7 +64,7 @@ public class SlackBotService {
 		try {
 			SlackResponse slackResponse = objectMapper.readValue(response.getBody(),
 					SlackResponse.class);
-			if (slackResponse.getOk().equals(ERROR_RESPONSE)) {
+			if (slackResponse.getOk().equals(ERROR_RESPONSE) || slackResponse.getOk().equals(AUTH_ERROR_RESPONSE)) {
 				log.error("Error occurred {}", slackResponse);
 				throw new IllegalArgumentException(SLACK_ERROR_MESSAGE);
 			}
